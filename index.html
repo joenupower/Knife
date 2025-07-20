@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Messer Klassifizierung</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 118px;
+        }
+
+        .knife-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: brightness(0.4) blur(1px);
+        }
+
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+            z-index: 1;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 22px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+            min-width: 200px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        .question-screen {
+            justify-content: center;
+            align-items: center;
+            padding: 60px 30px;
+        }
+
+        .question-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .question-text {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin: 0;
+            max-width: 800px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .answer-button {
+            border: none;
+            padding: 18px 40px;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            min-width: 120px;
+        }
+
+        .yes-button {
+            background: linear-gradient(135deg, #FF3B30 0%, #CC2E24 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
+        }
+
+        .yes-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(255, 59, 48, 0.4);
+        }
+
+        .no-button {
+            background: linear-gradient(135deg, #34C759 0%, #28A745 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(52, 199, 89, 0.3);
+        }
+
+        .no-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(52, 199, 89, 0.4);
+        }
+
+        .neutral-button {
+            background: linear-gradient(135deg, #8E8E93 0%, #636366 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(142, 142, 147, 0.3);
+        }
+
+        .neutral-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(142, 142, 147, 0.4);
+        }
+
+        .answer-button:active {
+            transform: translateY(0);
+        }
+
+        .result-screen {
+            justify-content: center;
+            align-items: center;
+            padding: 40px 30px;
+        }
+
+        .result-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .result-title {
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            margin: 0;
+        }
+
+        .result-description {
+            color: white;
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .restart-button {
+            background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .restart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.4);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #007AFF, #34C759);
+            transition: width 0.3s ease;
+            z-index: 10;
+        }
+
+        .title-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .title-overlay .main-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .title-overlay .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .knife-emoji {
+            font-size: 72px;
+            margin-bottom: 20px;
+            filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.5));
+        }
+
+
+        @media screen and (max-width: 430px) and (max-height: 932px) {
+            .container {
+                padding-bottom: 98px;
+            }
+            
+            .start-button {
+                padding: 18px 50px;
+                font-size: 20px;
+                min-width: 180px;
+            }
+
+            .question-screen {
+                padding: 40px 20px;
+            }
+
+            .question-content {
+                gap: 30px;
+            }
+
+            .question-text {
+                font-size: 20px;
+                padding: 20px;
+            }
+
+            .answer-buttons {
+                gap: 15px;
+            }
+
+            .answer-button {
+                padding: 16px 30px;
+                font-size: 18px;
+                min-width: 100px;
+            }
+
+            .result-title {
+                font-size: 28px;
+            }
+
+            .result-description {
+                font-size: 16px;
+                padding: 20px;
+            }
+
+            .title-overlay .main-title {
+                font-size: 36px;
+            }
+
+            .knife-emoji {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    
+    <!-- Start Screen -->
+    <div class="container" id="startScreen">
+        <div class="knife-container">
+            <img class="main-image" id="backgroundImage" src="knife-background.jpg" alt="Knife Background">
+            <div class="background-overlay"></div>
+        </div>
+        
+        <div class="title-overlay">
+            <div class="main-title">Messer Klassifizierung</div>
+            <div class="subtitle">Schweizer Waffenrecht</div>
+        </div>
+        
+        <button class="start-button" onclick="startApp()">START</button>
+    </div>
+
+    <!-- Question Screen -->
+    <div class="container question-screen" id="questionScreen" style="display: none;">
+        <div class="knife-container">
+            <img class="main-image" src="knife-background.jpg" alt="Knife Background">
+            <div class="background-overlay"></div>
+        </div>
+        
+        <div class="question-content">
+            <h2 class="question-text" id="questionText"></h2>
+            <div class="answer-buttons" id="answerButtons"></div>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="container result-screen" id="resultScreen" style="display: none;">
+        <div class="knife-container">
+            <img class="main-image" src="knife-background.jpg" alt="Knife Background">
+            <div class="background-overlay"></div>
+        </div>
+        
+        <div class="result-content">
+            <h1 class="result-title" id="resultTitle"></h1>
+            <div class="result-description" id="resultDescription"></div>
+            <button class="restart-button" onclick="restartApp()">Neue Klassifizierung</button>
+        </div>
+    </div>
+
+    <script>
+        async function loadBackgroundImage() {
+            try {
+                const imageData = await window.fs.readFile('paste.txt', { encoding: 'utf8' });
+                console.log('Background loaded successfully');
+            } catch (error) {
+                console.log('Using default background');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBackgroundImage);
+
+        const decisionTree = {
+            start: {
+                question: "Handelt es sich um ein einhändig bedienbares Messer mit automatischem Mechanismus? (dazu zählen auch federunterstützte Klappmesser)",
+                icon: "🔪",
+                answers: {
+                    "JA": "automatic_knife",
+                    "NEIN": "manual_operation"
+                }
+            },
+            automatic_knife: {
+                question: "Wie lang ist das Messer insgesamt?",
+                icon: "📏",
+                answers: {
+                    "Über 12 cm": "automatic_over_12cm",
+                    "12 cm oder weniger": "legal_small_automatic"
+                }
+            },
+            automatic_over_12cm: {
+                question: "Wie lang ist die Klinge?",
+                icon: "🗡️",
+                answers: {
+                    "Über 5 cm": "prohibited_automatic",
+                    "5 cm oder weniger": "legal_small_automatic"
+                }
+            },
+            automatic_under_12cm: {
+                question: "Wie lang ist die Klinge?",
+                icon: "🗡️",
+                answers: {
+                    "Über 5 cm": "prohibited_automatic",
+                    "5 cm oder weniger": "legal_small_automatic"
+                }
+            },
+            manual_operation: {
+                question: "Handelt es sich um ein Schmetterlingsmesser (Balisong)?",
+                icon: "🦋",
+                answers: {
+                    "JA": "butterfly_knife",
+                    "NEIN": "check_dagger"
+                }
+            },
+            butterfly_knife: {
+                question: "Wie lang ist das Messer insgesamt?",
+                icon: "📏",
+                answers: {
+                    "Über 12 cm": "check_butterfly_blade",
+                    "12 cm oder weniger": "legal_small_butterfly"
+                }
+            },
+            check_butterfly_blade: {
+                question: "Wie lang ist die Klinge?",
+                icon: "🗡️",
+                answers: {
+                    "Über 5 cm": "prohibited_butterfly_large",
+                    "5 cm oder weniger": "legal_small_butterfly"
+                }
+            },
+            check_dagger: {
+                question: "Hat das Messer eine symmetrische, dolchartige Klinge?",
+                icon: "⚔️",
+                answers: {
+                    "JA": "symmetric_blade",
+                    "NEIN": "check_throwing"
+                }
+            },
+            symmetric_blade: {
+                question: "Wie lang ist die Klinge?",
+                icon: "🗡️",
+                answers: {
+                    "Zwischen 5-30 cm": "prohibited_dagger",
+                    "Unter 5 cm": "legal_small_knife",
+                    "Über 30 cm": "legal_sword"
+                }
+            },
+            check_throwing: {
+                question: "Ist es ein Wurfmesser oder ähnlich konstruiert?",
+                icon: "🎯",
+                answers: {
+                    "JA": "throwing_knife",
+                    "NEIN": "legal_regular_knife"
+                }
+            },
+            throwing_knife: {
+                question: "Wie lang ist die Klinge?",
+                icon: "🗡️",
+                answers: {
+                    "Zwischen 5-30 cm": "prohibited_throwing",
+                    "Unter 5 cm": "legal_small_knife",
+                    "Über 30 cm": "legal_throwing_large"
+                }
+            }
+        };
+
+        const results = {
+            prohibited_automatic: {
+                title: "VERBOTENE WAFFE",
+                description: "Messer gelten als Waffen, wenn sie einen einhändig bedienbaren Spring- oder automatischen Auslösemechanismus oder über einen federunterstützten Öffnungsmechanismus verfügen, geöffnet insgesamt mehr als 12 cm lang sind und eine Klinge haben, die mehr als 5 cm lang ist.",
+                icon: "❌"
+            },
+            prohibited_butterfly_large: {
+                title: "VERBOTENE WAFFE", 
+                description: "Schmetterlingsmesser gelten als Waffen, wenn sie geöffnet insgesamt mehr als 12 cm lang sind und eine Klinge haben, die mehr als 5 cm lang ist.",
+                icon: "❌"
+            },
+            prohibited_dagger: {
+                title: "VERBOTENE WAFFE",
+                description: "Dolche mit symmetrischer Klinge zwischen 5-30 cm sind verbotene Waffen gemäss Schweizer Waffengesetz. Eine Ausnahmebewilligung ist erforderlich.",
+                icon: "❌"
+            },
+            prohibited_throwing: {
+                title: "VERBOTENE WAFFE",
+                description: "Wurfmesser gelten als Waffen, wenn sie eine feststehende, spitz zulaufende von mehr als 5 cm und weniger als 30 cm lange symmetrische Klinge aufweisen. Bei Wurfklingen, bei denen nicht eindeutig die Klingenlänge festgestellt werden kann, gilt die Gesamtlänge als Beurteilungskriterium.",
+                icon: "❌"
+            },
+            legal_small_automatic: {
+                title: "LEGAL",
+                description: "Messer gelten nur als Waffen, wenn sie einen einhändig bedienbaren Spring- oder automatischen Auslösemechanismus oder über einen federunterstützten Öffnungsmechanismus verfügen, geöffnet insgesamt mehr als 12 cm lang sind und eine Klinge haben, die mehr als 5 cm lang ist.",
+                icon: "✅"
+            },
+            legal_small_butterfly: {
+                title: "LEGAL",
+                description: "Schmetterlingsmesser gelten nur als Waffen, wenn sie geöffnet insgesamt mehr als 12 cm lang sind und eine Klinge haben, die mehr als 5 cm lang ist.",
+                icon: "✅"
+            },
+            legal_small_knife: {
+                title: "LEGAL",
+                description: "Kleine Messer mit Klingenlänge unter 5 cm sind grundsätzlich legal und gelten nicht als Waffen im Sinne des Waffengesetzes.",
+                icon: "✅"
+            },
+            legal_regular_knife: {
+                title: "LEGAL",
+                description: "Normale Messer sind grundsätzlich legal. Das Tragen in der Öffentlichkeit ohne berechtigten Grund kann aber als 'gefährlicher Gegenstand' betrachtet werden.",
+                icon: "✅"
+            },
+            legal_sword: {
+                title: "LEGAL", 
+                description: "Schwerter und sehr lange Klingen (>30 cm) gelten nicht als verbotene Waffen, fallen aber unter die Bestimmungen für gefährliche Gegenstände.",
+                icon: "✅"
+            },
+            legal_throwing_large: {
+                title: "LEGAL",
+                description: "Grosse Wurfmesser (>30 cm) sind nicht verboten, aber das Tragen in der Öffentlichkeit ist ohne berechtigten Grund problematisch.",
+                icon: "✅"
+            }
+        };
+
+        let currentNode = 'start';
+        let questionCount = 0;
+        const totalQuestions = 8;
+
+        function startApp() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'flex';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const node = decisionTree[currentNode];
+            if (!node) {
+                showResult();
+                return;
+            }
+
+            questionCount++;
+            updateProgressBar();
+
+            document.getElementById('questionText').textContent = node.question;
+
+            const buttonsContainer = document.getElementById('answerButtons');
+            buttonsContainer.innerHTML = '';
+
+            Object.keys(node.answers).forEach(answer => {
+                const button = document.createElement('button');
+                button.className = 'answer-button';
+                
+                if (answer === 'JA') {
+                    button.className += ' yes-button';
+                } else if (answer === 'NEIN') {
+                    button.className += ' no-button';
+                } else {
+                    button.className += ' neutral-button';
+                }
+                
+                button.textContent = answer;
+                button.onclick = () => answerQuestion(answer);
+                buttonsContainer.appendChild(button);
+            });
+        }
+
+        function answerQuestion(answer) {
+            const node = decisionTree[currentNode];
+            const nextNode = node.answers[answer];
+            
+            if (results[nextNode]) {
+                showResult(nextNode);
+            } else if (decisionTree[nextNode]) {
+                currentNode = nextNode;
+                showQuestion();
+            } else {
+                showResult('legal_regular_knife');
+            }
+        }
+
+        function showResult(resultKey) {
+            if (!resultKey) {
+                resultKey = 'legal_regular_knife';
+            }
+
+            const result = results[resultKey];
+            
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'flex';
+            
+            document.getElementById('resultTitle').textContent = result.title;
+            document.getElementById('resultDescription').textContent = result.description;
+
+            updateProgressBar(100);
+        }
+
+        function updateProgressBar(percentage) {
+            if (percentage) {
+                document.getElementById('progressBar').style.width = percentage + '%';
+            } else {
+                const progress = (questionCount / totalQuestions) * 100;
+                document.getElementById('progressBar').style.width = Math.min(progress, 90) + '%';
+            }
+        }
+
+        function restartApp() {
+            currentNode = 'start';
+            questionCount = 0;
+            updateProgressBar(0);
+            
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+        }
+
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function (e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function (e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
